@@ -24,4 +24,7 @@ var (
 	rockTexture       = "./ressources/rock.png"
 	heartTexture      = "./ressources/heart.png"
 	explosionTexture  = "./ressources/explosion.png"
+	explosionSound    = "./ressources/explosion.wav"
+	laserSound        = "./ressources/laser.wav"
+	hitSound          = "./ressources/hit.wav"
 )

@@ -24,8 +24,10 @@ var (
 	ufoSmall            rl.Texture2D
 	heart               rl.Texture2D
 	explosionTexture2D  rl.Texture2D
-
-	gameOver bool
+	explosionSFX        rl.Sound
+	laserSFX            rl.Sound
+	hitSFX              rl.Sound
+	gameOver            bool
 )
 
 func drawHud() {
@@ -67,6 +69,7 @@ func handleInput() {
 		}
 	}
 	if rl.IsKeyPressed(rl.KeyS) {
+		rl.PlaySound(laserSFX)
 		vec := rl.Vector2{
 			X: float32(r.x + (rocketRes / 2) - (laserWidth / 2)),
 			Y: float32(rocketYConst - rocketRes),
@@ -169,6 +172,7 @@ outer:
 				lasers = append(lasers[:i], lasers[i+1:]...)
 				if e.hp == 0 {
 					e.invisible = true
+					rl.PlaySound(explosionSFX)
 					r.destroyedObj[e.t] += 1
 					continue outer
 				}
@@ -185,8 +189,9 @@ outer:
 			r.hit = true
 			lastHit = time.Now().Unix()
 			r.hearts -= 1
-
+			rl.PlaySound(hitSFX)
 			if r.hearts == 0 {
+				rl.PlaySound(explosionSFX)
 				gameOver = true
 			}
 		}
@@ -223,7 +228,59 @@ func draw() {
 
 func main() {
 	rl.InitWindow(windowWidth, windowHeight, "RocketBoom")
+	rl.InitAudioDevice()
+	loadRessources()
+
+	defer rl.CloseAudioDevice()
 	defer rl.CloseWindow()
+	defer unloadRessources()
+	rl.SetTargetFPS(60)
+
+	defer func() {
+		drawScreen("Game Over", "Press space to exit")
+	}()
+	drawScreen("RocketBoom", "Press Space to start")
+	for !rl.WindowShouldClose() && !gameOver {
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.Black)
+		rl.DrawTexture(backgroundTexture2D, 0, 0, rl.White)
+		spawnEnemies()
+		checkForCollision()
+		handleInput()
+		updatePositions()
+		draw()
+		drawHud()
+		rl.EndDrawing()
+	}
+
+}
+
+func unloadRessources() {
+	rl.UnloadSound(laserSFX)
+	rl.UnloadSound(explosionSFX)
+	rl.UnloadSound(hitSFX)
+	rl.UnloadTexture(explosionTexture2D)
+	rl.UnloadTexture(heart)
+	rl.UnloadTexture(backgroundTexture2D)
+	rl.UnloadTexture(ufoTexture2D)
+	rl.UnloadTexture(rockTexture2D)
+	rl.UnloadTexture(rocketTexture2D)
+
+}
+
+func loadRessources() {
+	explosionWave := rl.LoadWave(explosionSound)
+	explosionSFX = rl.LoadSoundFromWave(explosionWave)
+
+	hitWave := rl.LoadWave(hitSound)
+	hitSFX = rl.LoadSoundFromWave(hitWave)
+
+	laserWave := rl.LoadWave(laserSound)
+	laserSFX = rl.LoadSoundFromWave(laserWave)
+
+	rl.UnloadWave(hitWave)
+	rl.UnloadWave(laserWave)
+	rl.UnloadWave(explosionWave)
 
 	rocketImg := rl.LoadImage(rocketTexture)
 	rocketTexture2D = rl.LoadTextureFromImage(rocketImg)
@@ -247,41 +304,9 @@ func main() {
 	explosionTexture2D = rl.LoadTextureFromImage(explosionImg)
 
 	rl.UnloadImage(explosionImg)
-
-	defer rl.UnloadTexture(explosionTexture2D)
-
 	rl.UnloadImage(heartImg)
-	defer rl.UnloadTexture(heart)
-
 	rl.UnloadImage(backImg)
-	defer rl.UnloadTexture(backgroundTexture2D)
-
 	rl.UnloadImage(ufoImg)
-	defer rl.UnloadTexture(ufoTexture2D)
-
 	rl.UnloadImage(rockImg)
-	defer rl.UnloadTexture(rockTexture2D)
-
 	rl.UnloadImage(rocketImg)
-	defer rl.UnloadTexture(rocketTexture2D)
-
-	rl.SetTargetFPS(60)
-
-	defer func() {
-		drawScreen("Game Over", "Press space to exit")
-	}()
-	drawScreen("RocketBoom", "Press Space to start")
-	for !rl.WindowShouldClose() && !gameOver {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.Black)
-		rl.DrawTexture(backgroundTexture2D, 0, 0, rl.White)
-		spawnEnemies()
-		checkForCollision()
-		handleInput()
-		updatePositions()
-		draw()
-		drawHud()
-		rl.EndDrawing()
-	}
-
 }
