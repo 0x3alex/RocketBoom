@@ -68,7 +68,7 @@ func spawnEnemyWave() {
 	}
 
 	var newWave []*enemy
-	for i := 0; i < rand.Intn(5)+4; i++ {
+	for i := 0; i < rand.Intn(3)+4; i++ {
 	retry:
 		x := rand.Int31n(windowWidth-10-enemyRes) + 10
 		r1 := rl.Rectangle{

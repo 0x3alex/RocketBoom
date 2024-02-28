@@ -52,8 +52,8 @@ func checkForPowerUpHit() {
 	rBox := rl.Rectangle{
 		X:      float32(rocketPlayer.x),
 		Y:      float32(rocketYConst),
-		Width:  float32(rocketRes),
-		Height: float32(rocketRes),
+		Width:  float32(rocketRes) - 10,
+		Height: float32(rocketRes) - 10,
 	}
 
 	for i, p := range powerups {
